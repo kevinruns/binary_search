@@ -43,7 +43,9 @@ class Tree
     @root = Node.new(array[mid], left_tree, right_tree)
   end
 
+  # insert a value
   def insert(value)
+    print "Inserting #{value}\n"
     node = @root
 
     while node
@@ -59,6 +61,7 @@ class Tree
     end
   end
 
+  # for deleting nodes with 2 children, delete successor, return successor value
   def del_successor(node)
     value = nil
     if node.right.left.nil?
@@ -75,37 +78,56 @@ class Tree
     value
   end
 
+  # does node have children
+  def children(node)
+    node.left || node.right ? true : false
+  end
 
   def delete(value)
+    print "Deleting #{value}\n"
     node = @root
 
     while node
 
+      # for value less than node move left
       if value < node.value && node.left
-        if node.left.value == value && !(node.left.left || node.left.left) 
-            node.left = nil
-            return
-          else
-            node = node.left
-          end
 
+        # but if left child == value and has no children need to delete link
+        if node.left.value == value && !children(node.left)
+          node.left = nil
+          return
+        else
+          node = node.left
+        end
+
+      # for value gt than node move right
       elsif value > node.value && node.right
-        if node.right.value == value && !(node.right.right || node.right.left) 
+
+        # but if right child == value and has no children need to delete link
+        if node.right.value == value && !children(node.right) 
           node.right = nil
           return
         else
           node = node.right
         end
 
+      # value found in node and node has children
       elsif value == node.value
+
+        # case with 2 children, replace node value by successor, delete successor
         if node.left && node.right
           node.value = del_successor(node)
+
+        # cases with one child, replace node by child
         elsif node.left
           node.value = node.left.value
+          node.right = node.left.right
           node.left = node.left.left
+
         elsif node.right
           node.value = node.right.value
           node.right = node.right.right
+          node.left = node.right.left
         end
         return
 
@@ -132,7 +154,7 @@ sorted_array = array.sort.uniq
 
 bst = Tree.new
 bst.build_tree(sorted_array, 0, sorted_array.length - 1)
-#bst.pretty_print
+bst.pretty_print
 bst.insert(5)
 bst.insert(11)
 bst.insert(18)
@@ -142,4 +164,10 @@ bst.pretty_print
 bst.delete(5)
 bst.pretty_print
 bst.delete(13)
+bst.pretty_print
+bst.delete(1)
+bst.pretty_print
+bst.delete(14)
+bst.pretty_print
+bst.delete(18)
 bst.pretty_print
