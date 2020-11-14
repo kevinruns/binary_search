@@ -19,42 +19,129 @@
 # binary search node
 class Node
 
-  attr_writer :left_child, :right_child
+  attr_accessor :value, :left, :right
 
-  def initialize(value, left_child, right_child)
-    value = value
-    left_child = left_child
-    right_child = right_child
+  def initialize(value, left, right)
+    @value = value
+    @left = left
+    @right = right
   end
 end
 
 # binary search tree
 class Tree
   def initialize
-    root = nil
+    @root = nil
   end
 
   def build_tree(array, first, last)
+    return nil if last < first
 
     mid = (first + last) / 2
-#    p "mid: #{array[mid]}"
-
-    return Node.new(array[first], nil, nil) if last < first
-
-#   p "first #{first}  last #{last}"
-    p array[first..last]
-    p "call left first #{first}  mid-1 #{mid - 1}"
     left_tree = build_tree(array, first, mid - 1)
-    p "call right  mid+1 #{mid + 1}  last #{last}"
     right_tree = build_tree(array, mid + 1, last)
-    p "assign root with value #{array[mid]}"
-    root = Node.new(array[mid], left_tree, right_tree)
-
+    @root = Node.new(array[mid], left_tree, right_tree)
   end
+
+  def insert(value)
+    node = @root
+
+    while node
+      if value < node.value
+        return node.left = Node.new(value, nil, nil) unless node.left
+
+        node = node.left
+      else
+        return node.right = Node.new(value, nil, nil) unless node.right
+
+        node = node.right
+      end
+    end
+  end
+
+  def del_successor(node)
+    value = nil
+    if node.right.left.nil?
+      value = node.right.value
+      node.right = node.right.right
+    else
+      parent = node.right
+      while parent.left.left
+        parent = parent.left
+      end
+      value = parent.left.value
+      parent.left = nil
+    end
+    value
+  end
+
+
+  def delete(value)
+    node = @root
+
+    while node
+
+      if value < node.value && node.left
+        if node.left.value == value && !(node.left.left || node.left.left) 
+            node.left = nil
+            return
+          else
+            node = node.left
+          end
+
+      elsif value > node.value && node.right
+        if node.right.value == value && !(node.right.right || node.right.left) 
+          node.right = nil
+          return
+        else
+          node = node.right
+        end
+
+      elsif value == node.value
+        if node.left && node.right
+          node.value = del_successor(node)
+        elsif node.left
+          node.value = node.left.value
+          node.left = node.left.left
+        elsif node.right
+          node.value = node.right.value
+          node.right = node.right.right
+        else
+          node = nil
+        end
+        return
+
+      else
+        print "Value not found"
+      end
+    end
+  end
+
+
+
+
+  def pretty_print(node = @root, prefix = '', is_left = true)
+    pretty_print(node.right, "#{prefix}#{is_left ? '│   ' : '    '}", false) if node.right
+    puts "#{prefix}#{is_left ? '└── ' : '┌── '}#{node.value}"
+    pretty_print(node.left, "#{prefix}#{is_left ? '    ' : '│   '}", true) if node.left
+  end
+
 end
 
-array = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]
+#array = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]
+array = [1,3,4,6,7,8,10,13,14]
 sorted_array = array.sort.uniq
 
 bst = Tree.new
 bst.build_tree(sorted_array, 0, sorted_array.length - 1)
+#bst.pretty_print
+bst.insert(5)
+bst.insert(11)
+bst.insert(18)
+bst.pretty_print
+bst.delete(7)
+bst.pretty_print
+bst.delete(5)
+bst.pretty_print
+bst.delete(13)
+bst.pretty_print
