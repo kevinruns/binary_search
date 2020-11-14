@@ -106,8 +106,6 @@ class Tree
         elsif node.right
           node.value = node.right.value
           node.right = node.right.right
-        else
-          node = nil
         end
         return
 
