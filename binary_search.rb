@@ -288,10 +288,8 @@ bst = Tree.new
 bst.build_tree(sorted_array, 0, sorted_array.length - 1)
 bst.pretty_print
 
-p bst.level_order
-
 #p bst.balanced?
-#p bst.rebalance
+p bst.rebalance
 
 # p bst.height(bst.find(67))
 # p bst.depth(bst.find(5))
