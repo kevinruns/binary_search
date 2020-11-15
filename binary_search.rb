@@ -1,3 +1,4 @@
+require 'pry'
 
 # binary search node
 class Node
@@ -34,6 +35,8 @@ class Tree
   # insert a value
   def insert(value)
     print "Inserting #{value}\n"
+    return "ERROR: #{value} already in tree" unless self.find(value) == false
+
     node = @root
 
     while node
@@ -66,17 +69,12 @@ class Tree
     value
   end
 
-  # does node have children
-  def children(node)
-    node.left || node.right ? true : false
-  end
-
   def delete(value)
     print "Deleting #{value}\n"
     node = @root
 
     # root case with no children
-    node.value = nil if node.value == value && !children(node)
+    node.value = nil if node.value == value && !node.children
 
     while node
 
@@ -84,7 +82,7 @@ class Tree
       if value < node.value && node.left
 
         # but if left child == value and has no children need to delete link
-        if node.left.value == value && !children(node.left)
+        if node.left.value == value && !node.left.children
           node.left = nil
           return
         else
@@ -95,7 +93,7 @@ class Tree
       elsif value > node.value && node.right
 
         # but if right child == value and has no children need to delete link
-        if node.right.value == value && !children(node.right) 
+        if node.right.value == value && !node.right.children
           node.right = nil
           return
         else
@@ -117,28 +115,27 @@ class Tree
 
         elsif node.right
           node.value = node.right.value
-          node.right = node.right.right
           node.left = node.right.left
+          node.right = node.right.right
         end
         return
 
       else
-        print "Value not found"
+        return "ERROR: Value not found"
       end
     end
   end
 
   def find(value)
-    print "Finding #{value}\n"
     node = @root
 
     until node.value == value
       if value < node.value
-        return "Value not found" unless node.left
+        return false unless node.left
 
         node = node.left
       else
-        return "Value not found" unless node.right
+        return false unless node.right
 
         node = node.right
       end
@@ -146,8 +143,8 @@ class Tree
     node
   end
 
-  def level_order
-
+  # level order transverse
+  def level_order()
     print "Level order output\n"
     queue_nodes = []
     queue_nodes.push(@root)
@@ -169,46 +166,111 @@ class Tree
       next_level = queue_nodes.last(i)
     end
 
-    queue_nodes.each do |node|
-      p node.value
-    end
+    array = []
+    queue_nodes.each { |node| array.push(node.value) }
+    array
   end
 
-
-  def in_order(node = @root)
-
-    return node.value unless children(node)
+  # in order transverse, return array of values
+  def in_order(node=@root, array=[])
+    return [node.value] unless node.children
 
     if node.left
-      if node.left.children
-        in_order(node.left) 
-      else 
-        print "node #{node.left.value} \n"
-      end
+      node.left.children ? in_order(node.left, array) : array.push(node.left.value)
     end
 
-    print "node #{node.value} \n"
-    
+    array.push(node.value)
+
     if node.right
-      if children(node.right)
-        in_order(node.right) 
-      else 
-        print "node #{node.right.value} \n"
-      end
+      node.right.children ? in_order(node.right, array) : array.push(node.right.value)
     end
 
+    array
   end
 
-  def pre_order
-    print "Pre-order traversal\n"
+  # pre order transverse, return array of values
+  def pre_order(node=@root, array=[])
+    return [node.value] unless node.children
 
+    array.push(node.value)
+
+    if node.left
+      node.left.children ? pre_order(node.left, array) : array.push(node.left.value)
+    end
+
+    if node.right
+      node.right.children ? pre_order(node.right, array) : array.push(node.right.value)
+    end
+
+    array
   end
 
-  def post_order
-    print "Post-order traversal\n"
+  # post order transverse, return array of values
+  def post_order(node=@root, array=[])
+    return [node.value] unless node.children
 
+    if node.left
+      node.left.children ? post_order(node.left, array) : array.push(node.left.value)
+    end
+
+    if node.right
+      node.right.children ? post_order(node.right, array) : array.push(node.right.value)
+    end
+
+    array.push(node.value)
+
+    array
   end
 
+  def height(node, cnt=0)
+    return cnt unless node.children
+    cnt += 1
+    height(node.left, cnt) if node.left
+    height(node.right, cnt) if node.right
+  end
+
+  def depth(node, dnode=@root, cnt=0)
+    return cnt if node.value == dnode.value
+    cnt += 1
+    if node.value < dnode.value
+      depth(node, dnode.left, cnt)
+    else
+      depth(node, dnode.right, cnt)
+    end
+  end
+
+  def balanced?(node=@root, balance=true)
+
+    return balance unless node.children
+
+    left_height = node.left ? self.height(node.left) : nil
+    right_height = node.right ? self.height(node.right) : nil
+    balance = heights_balanced(left_height, right_height)
+
+    balance = self.balanced?(node.left, balance) if node.left && node.left.children && balance
+    balance = self.balanced?(node.right, balance) if node.right && node.right.children && balance
+ 
+    balance
+  end
+  
+  def heights_balanced(left, right)
+    if left && right && ((left - right).abs <= 1)
+      return true
+    elsif (left.nil? && right == 0) || (left == 0 && right.nil?)
+      return true
+    elsif left.nil? && right.nil?
+      return true
+    else 
+      return false
+    end
+  end
+
+  def rebalance
+    unless self.balanced?
+      array = self.level_order
+      p array
+    end
+  end
 
   def pretty_print(node = @root, prefix = '', is_left = true)
     pretty_print(node.right, "#{prefix}#{is_left ? '│   ' : '    '}", false) if node.right
@@ -225,14 +287,25 @@ sorted_array = array.sort.uniq
 bst = Tree.new
 bst.build_tree(sorted_array, 0, sorted_array.length - 1)
 bst.pretty_print
+
+p bst.level_order
+
+#p bst.balanced?
+#p bst.rebalance
+
+# p bst.height(bst.find(67))
+# p bst.depth(bst.find(5))
 # bst.insert(5)
+# bst.pretty_print
 # bst.insert(11)
+# bst.pretty_print
 # bst.insert(18)
 # bst.pretty_print
 # bst.delete(7)
 # bst.pretty_print
 # bst.delete(5)
 # bst.pretty_print
+
 # bst.delete(13)
 # bst.pretty_print
 # bst.delete(1)
@@ -241,5 +314,6 @@ bst.pretty_print
 # bst.pretty_print
 # bst.delete(18)
 # bst.pretty_print
-# p bst.find(10).value
-bst.in_order
+# p bst.in_order
+# p bst.pre_order
+# p bst.post_order
