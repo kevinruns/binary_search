@@ -145,7 +145,7 @@ class Tree
 
   # level order transverse
   def level_order()
-    print "Level order output\n"
+    print "Level ordering\n"
     queue_nodes = []
     queue_nodes.push(@root)
     next_level = []
@@ -268,7 +268,8 @@ class Tree
   def rebalance
     unless self.balanced?
       array = self.level_order
-      p array
+      self.build_tree(array, 0, array.length - 1)
+      "Rebalanced"
     end
   end
 
@@ -288,8 +289,13 @@ bst = Tree.new
 bst.build_tree(sorted_array, 0, sorted_array.length - 1)
 bst.pretty_print
 
-#p bst.balanced?
+p bst.delete(9)
+p bst.delete(23)
+bst.pretty_print
+p bst.balanced?
 p bst.rebalance
+bst.pretty_print
+p bst.balanced?
 
 # p bst.height(bst.find(67))
 # p bst.depth(bst.find(5))
