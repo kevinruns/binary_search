@@ -1,21 +1,4 @@
 
-# 1) Get the Middle of the array and make it root.
-# 2) Recursively do same for left half and right half.
-#       a) Get the middle of left half and make it left child of the root
-#           created in step 1.
-#       b) Get the middle of right half and make it right child of the
-#           root created in step 1.
-
-
-# code takes sorted array, start index, end index
-
-# if start_index > end_index return null  (return when end -1 & start 0)
-#     calculate middle (start + end / 2)
-#     create root
-#     call algo for left 
-#     call for right
-
-
 # binary search node
 class Node
 
@@ -26,6 +9,11 @@ class Node
     @left = left
     @right = right
   end
+
+  def children
+    @left || @right ? true : false
+  end
+
 end
 
 # binary search tree
@@ -87,6 +75,9 @@ class Tree
     print "Deleting #{value}\n"
     node = @root
 
+    # root case with no children
+    node.value = nil if node.value == value && !children(node)
+
     while node
 
       # for value less than node move left
@@ -137,7 +128,86 @@ class Tree
     end
   end
 
+  def find(value)
+    print "Finding #{value}\n"
+    node = @root
 
+    until node.value == value
+      if value < node.value
+        return "Value not found" unless node.left
+
+        node = node.left
+      else
+        return "Value not found" unless node.right
+
+        node = node.right
+      end
+    end
+    node
+  end
+
+  def level_order
+
+    print "Level order output\n"
+    queue_nodes = []
+    queue_nodes.push(@root)
+    next_level = []
+    next_level.push(@root)
+
+    until next_level.empty?
+      i = 0
+      next_level.each do |node|
+        if node.left
+          queue_nodes.push(node.left)
+          i += 1
+        end
+        if node.right
+          queue_nodes.push(node.right)
+          i += 1
+        end
+      end
+      next_level = queue_nodes.last(i)
+    end
+
+    queue_nodes.each do |node|
+      p node.value
+    end
+  end
+
+
+  def in_order(node = @root)
+
+    return node.value unless children(node)
+
+    if node.left
+      if node.left.children
+        in_order(node.left) 
+      else 
+        print "node #{node.left.value} \n"
+      end
+    end
+
+    print "node #{node.value} \n"
+    
+    if node.right
+      if children(node.right)
+        in_order(node.right) 
+      else 
+        print "node #{node.right.value} \n"
+      end
+    end
+
+  end
+
+  def pre_order
+    print "Pre-order traversal\n"
+
+  end
+
+  def post_order
+    print "Post-order traversal\n"
+
+  end
 
 
   def pretty_print(node = @root, prefix = '', is_left = true)
@@ -148,26 +218,28 @@ class Tree
 
 end
 
-#array = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]
-array = [1,3,4,6,7,8,10,13,14]
+array = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]
+#array = [1,3,4,6,7,8,10,13,14]
 sorted_array = array.sort.uniq
 
 bst = Tree.new
 bst.build_tree(sorted_array, 0, sorted_array.length - 1)
 bst.pretty_print
-bst.insert(5)
-bst.insert(11)
-bst.insert(18)
-bst.pretty_print
-bst.delete(7)
-bst.pretty_print
-bst.delete(5)
-bst.pretty_print
-bst.delete(13)
-bst.pretty_print
-bst.delete(1)
-bst.pretty_print
-bst.delete(14)
-bst.pretty_print
-bst.delete(18)
-bst.pretty_print
+# bst.insert(5)
+# bst.insert(11)
+# bst.insert(18)
+# bst.pretty_print
+# bst.delete(7)
+# bst.pretty_print
+# bst.delete(5)
+# bst.pretty_print
+# bst.delete(13)
+# bst.pretty_print
+# bst.delete(1)
+# bst.pretty_print
+# bst.delete(14)
+# bst.pretty_print
+# bst.delete(18)
+# bst.pretty_print
+# p bst.find(10).value
+bst.in_order
